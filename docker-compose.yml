@@ -87,7 +87,9 @@ services:
   # Kong: The API Gateway
   #######################################
   kong:
-    image: "${KONG_DOCKER_TAG:-kong:latest}"
+    build:
+      context: "./kong/"
+    image: "kong-oidc:latest"
     user: "${KONG_USER:-kong}"
     depends_on:
       - kong-database
@@ -103,6 +105,8 @@ services:
       KONG_PROXY_ACCESS_LOG: /dev/stdout
       KONG_PROXY_ERROR_LOG: /dev/stderr
       KONG_PG_PASSWORD_FILE: /run/secrets/kong_postgres_password
+      KONG_PLUGINS: "bundled,oidc"
+      KONG_LOG_LEVEL: debug
     secrets:
       - kong_postgres_password
     networks:
@@ -156,7 +160,6 @@ services:
   product-backend:
     build:
       context: "./product-backend/"
-      dockerfile: "Dockerfile"
     image: "product-backend:1.0"
     container_name: "product-backend"
     ports:
