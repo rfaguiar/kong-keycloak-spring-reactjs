@@ -21,6 +21,7 @@ services:
     container_name: kong-database
     image: postgres:9.5
     environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
       POSTGRES_DB: ${KONG_PG_DATABASE:-kong}
       POSTGRES_USER: ${KONG_PG_USER:-kong}
       POSTGRES_PASSWORD_FILE: /run/secrets/kong_postgres_password
@@ -192,12 +193,13 @@ services:
     container_name: "keycloak-db"
     image: postgres:9.6
     volumes:
-      - keycloak_data:/var/lib/postresql/data
+      - keycloak_data:/var/lib/postgresql/data
     networks:
       - keycloak-net
     ports:
       - "25432:5432"
     environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
       POSTGRES_DB:       keycloak
       POSTGRES_USER:     keycloak
       POSTGRES_PASSWORD: password

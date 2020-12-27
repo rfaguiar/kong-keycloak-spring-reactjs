@@ -43,6 +43,24 @@ Before you start to code, we recommend discussing your plans through a [GitHub i
 [kong-docs-url]: https://docs.konghq.com/
 [github-new-issue]: https://github.com/Kong/docker-kong/issues/new
 
-### Secure Api sample
+### Reference: 
 https://www.jerney.io/secure-apis-kong-keycloak-1  
-e6e0ce6a-536a-4596-bd22-a172472e0784  
+https://www.jerney.io/secure-apis-kong-keycloak-2  
+
+OIDC plugin:  
+name=oidc 
+client_id=kong 
+client_secret=36a909b7-dc44-45e6-96e8-df4738e1b9c2  
+discovery=http://172.21.0.1:8180/auth/realms/kong/.well-known/openid-configuration  
+introspection_endpoint=http://172.21.0.1:8180/auth/realms/kong/protocol/openid-connect/token/introspect  
+
+* create config plugin oidc for integrate with keycloack instrospect endpoint  
+``` shell
+$ curl -s -X POST http://localhost:8001/plugins \
+  -d name=oidc \
+  -d config.client_id=kong \
+  -d config.client_secret=36a909b7-dc44-45e6-96e8-df4738e1b9c2 \
+  -d config.discovery=http://172.21.0.1:8180/auth/realms/kong/.well-known/openid-configuration \
+  -d config.introspection_endpoint=http://172.21.0.1:8180/auth/realms/kong/protocol/openid-connect/token/introspect \
+  | python -mjson.tool  
+```
