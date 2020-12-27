@@ -2,11 +2,14 @@ version: '3.7'
 
 volumes:
   kong_data: {}
+  keycloak_data: { }
 
 networks:
   kong-net-db:
     driver: bridge
   kong-backend:
+    driver: bridge
+  keycloak-net:
     driver: bridge
 
 services:
@@ -15,6 +18,7 @@ services:
   # Postgres: The database used by Kong
   #######################################
   kong-database:
+    container_name: kong-database
     image: postgres:9.5
     environment:
       POSTGRES_DB: ${KONG_PG_DATABASE:-kong}
@@ -44,6 +48,7 @@ services:
   # Kong database migration
   #######################################
   kong-migrations:
+    container_name: kong-migrations
     image: "${KONG_DOCKER_TAG:-kong:latest}"
     command: kong migrations bootstrap
     depends_on:
@@ -64,6 +69,7 @@ services:
         condition: on-failure
 
   kong-migrations-up:
+    container_name: kong-migrations-up
     image: "${KONG_DOCKER_TAG:-kong:latest}"
     command: kong migrations up && kong migrations finish
     depends_on:
@@ -87,6 +93,7 @@ services:
   # Kong: The API Gateway
   #######################################
   kong:
+    container_name: kong
     build:
       context: "./kong/"
     image: "kong-oidc:latest"
@@ -131,6 +138,7 @@ services:
   # Konga database prepare
   #######################################
   konga-prepare:
+    container_name: konga-prepare
     image: pantsel/konga:latest
     command: "-c prepare -a postgres -u postgresql://kong:${KONG_PG_PASSWORD:-kong}@kong-database:5432/konga"
     networks:
@@ -143,8 +151,8 @@ services:
   # Konga: Kong GUI
   #######################################
   konga:
-    image: pantsel/konga:latest
     container_name: konga
+    image: pantsel/konga:latest
     restart: always
     networks:
       - kong-net-db
@@ -157,6 +165,10 @@ services:
     ports:
       - "1337:1337"
 
+
+  #######################################
+  # Product APi
+  #######################################
   product-backend:
     build:
       context: "./product-backend/"
@@ -172,6 +184,45 @@ services:
       start_period: 10s
     networks:
       - "kong-backend"
+
+  #######################################
+  # Keycloak database
+  #######################################
+  keycloak-db:
+    container_name: "keycloak-db"
+    image: postgres:9.6
+    volumes:
+      - keycloak_data:/var/lib/postresql/data
+    networks:
+      - keycloak-net
+    ports:
+      - "25432:5432"
+    environment:
+      POSTGRES_DB:       keycloak
+      POSTGRES_USER:     keycloak
+      POSTGRES_PASSWORD: password
+
+  #######################################
+  # Keycloak auth server
+  #######################################
+  keycloak:
+    container_name: "keycloak"
+    image: jboss/keycloak:latest
+    depends_on:
+      - keycloak-db
+    networks:
+      - keycloak-net
+    ports:
+      - "8180:8080"
+    environment:
+      DB_VENDOR:   POSTGRES
+      DB_ADDR:     keycloak-db
+      DB_PORT:     5432
+      DB_DATABASE: keycloak
+      DB_USER:     keycloak
+      DB_PASSWORD: password
+      KEYCLOAK_USER:     admin
+      KEYCLOAK_PASSWORD: admin
 
 secrets:
   kong_postgres_password:

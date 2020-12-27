@@ -42,3 +42,7 @@ Before you start to code, we recommend discussing your plans through a [GitHub i
 [kong-site-url]: https://konghq.com/
 [kong-docs-url]: https://docs.konghq.com/
 [github-new-issue]: https://github.com/Kong/docker-kong/issues/new
+
+### Secure Api sample
+https://www.jerney.io/secure-apis-kong-keycloak-1  
+e6e0ce6a-536a-4596-bd22-a172472e0784  
