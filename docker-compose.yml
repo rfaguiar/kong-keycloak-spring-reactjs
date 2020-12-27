@@ -177,12 +177,19 @@ services:
     container_name: "product-backend"
     ports:
       - "8080:8080"
-    healthcheck:
-      test: "curl --fail --silent localhost:8080/actuator/health | grep UP || exit 1"
-      interval: 20s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
+    networks:
+      - "kong-backend"
+
+  #######################################
+  # Product Frontend webapp
+  #######################################
+  frontend:
+    build:
+      context: "./frontend/"
+    image: "frontend:1.0"
+    container_name: "frontend"
+    ports:
+      - "3000:81"
     networks:
       - "kong-backend"
 
