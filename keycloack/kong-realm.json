@@ -845,6 +845,8 @@
     {
       "id": "6ce8c865-c37b-48c8-8c4f-2a5f298cf075",
       "clientId": "stock-webapp",
+      "rootUrl": "",
+      "adminUrl": "",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
@@ -856,7 +858,12 @@
         "http://localhost:3000/*",
         "http://localhost:3001/*"
       ],
-      "webOrigins": [],
+      "webOrigins": [
+        "http://172.21.0.1:3001",
+        "http://172.21.0.1:3000",
+        "http://localhost:3001",
+        "http://localhost:3000"
+      ],
       "notBefore": 0,
       "bearerOnly": false,
       "consentRequired": false,

@@ -46,6 +46,7 @@ Before you start to code, we recommend discussing your plans through a [GitHub i
 ### Reference: 
 https://www.jerney.io/secure-apis-kong-keycloak-1  
 https://www.jerney.io/secure-apis-kong-keycloak-2  
+https://cagline.medium.com/authenticate-and-authorize-react-routes-component-with-keycloak-666e85662636  
 
 OIDC plugin:  
 name=oidc 
