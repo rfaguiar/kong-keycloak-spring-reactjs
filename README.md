@@ -51,7 +51,7 @@ https://cagline.medium.com/authenticate-and-authorize-react-routes-component-wit
 OIDC plugin:  
 name=oidc 
 client_id=kong 
-client_secret=36a909b7-dc44-45e6-96e8-df4738e1b9c2  
+client_secret=f1e755b7-d7f9-458c-af51-3767c803b118  
 discovery=http://172.21.0.1:8180/auth/realms/kong/.well-known/openid-configuration  
 introspection_endpoint=http://172.21.0.1:8180/auth/realms/kong/protocol/openid-connect/token/introspect  
 
@@ -60,7 +60,7 @@ introspection_endpoint=http://172.21.0.1:8180/auth/realms/kong/protocol/openid-c
 $ curl -s -X POST http://localhost:8001/plugins \
   -d name=oidc \
   -d config.client_id=kong \
-  -d config.client_secret=36a909b7-dc44-45e6-96e8-df4738e1b9c2 \
+  -d config.client_secret=f1e755b7-d7f9-458c-af51-3767c803b118 \
   -d config.discovery=http://172.21.0.1:8180/auth/realms/kong/.well-known/openid-configuration \
   -d config.introspection_endpoint=http://172.21.0.1:8180/auth/realms/kong/protocol/openid-connect/token/introspect \
   | python -mjson.tool  
