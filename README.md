@@ -1,6 +1,8 @@
 # kong-keycloak-spring-reactjs
 Project Frontend Reactjs and Gateway Kong and OAuth Server SSO Keycloack and backend Spring
 
+![architecture](https://github.com/rfaguiar/kong-keycloak-spring-reactjs/blob/master/kong-keycloak-secure-api-web-app.png?raw=true)
+
 # Kong in Docker Compose
 
 This is the official Docker Compose template for [Kong][kong-site-url].
