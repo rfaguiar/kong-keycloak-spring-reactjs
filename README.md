@@ -67,3 +67,12 @@ $ curl -s -X POST http://localhost:8001/plugins \
   -d config.introspection_endpoint=http://172.21.0.1:8180/auth/realms/kong/protocol/openid-connect/token/introspect \
   | python -mjson.tool  
 ```
+
+### setup minikube  
+``` shell
+$ make k-setup  
+$ make k-ip
+$ make k-dashboard
+```
+add to hosts:
+<minikube ip> stock.product-backend.local

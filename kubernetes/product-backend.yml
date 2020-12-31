@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: product-backend
+    version: v1
+  name: product-backend-v1
+  namespace: stock
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: product-backend
+      version: v1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: product-backend
+        version: v1
+        environment: dev
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/scheme: "http"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8080"
+        sidecar.istio.io/inject: "true"
+    spec:
+      containers:
+        - image: product-backend:1.0
+          name: product-backend
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: false
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-backend
+  labels:
+    app: product-backend
+  namespace: stock
+spec:
+  type: ClusterIP
+  selector:
+    app: product-backend
+  ports:
+    - protocol: TCP
+      name: http
+      port: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: product-backend-ing
+  namespace: stock
+  labels:
+    app: product-backend
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: stock.product-backend.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: product-backend
+                port:
+                  number: 8080
