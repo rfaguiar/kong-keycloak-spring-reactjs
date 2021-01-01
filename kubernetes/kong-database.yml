@@ -1,0 +1,117 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kong
+---
+#######################################
+# Postgres: The database used by Kong
+#######################################
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  namespace: kong
+  name: minikube-standard
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+provisioner: k8s.io/minikube-hostpath
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  namespace: kong
+  name: kong-postgres-pv
+  labels:
+    app: postgres
+    type: local
+spec:
+  storageClassName: minikube-standard
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/var/data"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  namespace: kong
+  name: kong-postgres-pv-claim
+  labels:
+    app: postgres
+spec:
+  storageClassName: minikube-standard
+  capacity:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  namespace: kong
+  name: postgres-configuration
+  labels:
+    app: postgres
+data:
+  POSTGRES_DB: a29uZ2Ri
+  POSTGRES_USER: a29uZ3VzZXI=
+  POSTGRES_PASSWORD: a29uZ2RicGFzc3dvcmQ=
+  PGDATA: L3Zhci9saWIvcG9zdGdyZXNxbC9kYXRhL3BnZGF0YQ==
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: kong
+  name: postgres-statefulset
+  labels:
+    app: postgres
+spec:
+  serviceName: "postgres"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:9.6
+          envFrom:
+            - secretRef:
+                name: postgres-configuration
+          ports:
+            - containerPort: 5432
+              name: postgresdb
+          volumeMounts:
+            - name: pv-data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: pv-data
+          persistentVolumeClaim:
+            claimName: kong-postgres-pv-claim
+---
+# Kong postgres service
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong-postgres
+  namespace: kong
+  labels:
+    app: postgres
+spec:
+  type: ClusterIP
+  selector:
+    app: postgres
+  ports:
+    - protocol: TCP
+      name: http
+      port: 5432
+---

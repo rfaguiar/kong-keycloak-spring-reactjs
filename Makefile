@@ -42,14 +42,14 @@ k-dashboard:
 	minikube -p minikube dashboard;
 
 k-start:
-	minikube -p minikube; \
+	minikube -p minikube start; \
 	kubectl config set-context $$(kubectl config current-context) --namespace=stock;
 
 k-ip:
 	minikube -p minikube ip
 
 k-stop:
-	minikube stop;
+	minikube -p minikube stop;
 
 k-getall:
 	kubectl -n stock get deploy,rc,rs,pod,svc,ing;
@@ -66,4 +66,5 @@ k-product-deploy:
 	kubectl apply -f kubernetes/product-backend.yml
 
 k-kong-deploy:
+	kubectl apply -f kubernetes/kong-database.yml; \
 	kubectl apply -f kubernetes/kong.yml

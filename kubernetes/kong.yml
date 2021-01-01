@@ -4,117 +4,6 @@ metadata:
   name: kong
 ---
 #######################################
-# Postgres: The database used by Kong
-#######################################
-kind: StorageClass
-apiVersion: storage.k8s.io/v1
-metadata:
-  namespace: kong
-  name: minikube-standard
-  annotations:
-    storageclass.kubernetes.io/is-default-class: "true"
-  labels:
-    addonmanager.kubernetes.io/mode: Reconcile
-provisioner: k8s.io/minikube-hostpath
----
-kind: PersistentVolume
-apiVersion: v1
-metadata:
-  namespace: kong
-  name: kong-postgres-pv
-  labels:
-    app: postgres
-    type: local
-spec:
-  storageClassName: minikube-standard
-  capacity:
-    storage: 5Gi
-  accessModes:
-    - ReadWriteOnce
-  hostPath:
-    path: "/var/data"
----
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  namespace: kong
-  name: kong-postgres-pv-claim
-  labels:
-    app: postgres
-spec:
-  storageClassName: minikube-standard
-  capacity:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 5Gi
----
-apiVersion: v1
-kind: Secret
-metadata:
-  namespace: kong
-  name: postgres-configuration
-  labels:
-    app: postgres
-data:
-  POSTGRES_DB: a29uZ2Ri
-  POSTGRES_USER: a29uZ3VzZXI=
-  POSTGRES_PASSWORD: a29uZ2RicGFzc3dvcmQ=
----
-apiVersion: apps/v1
-kind: StatefulSet
-metadata:
-  namespace: kong
-  name: postgres-statefulset
-  labels:
-    app: postgres
-spec:
-  serviceName: "postgres"
-  replicas: 1
-  selector:
-    matchLabels:
-      app: postgres
-  template:
-    metadata:
-      labels:
-        app: postgres
-    spec:
-      containers:
-        - name: postgres
-          image: postgres:12
-          envFrom:
-            - secretRef:
-                name: postgres-configuration
-          ports:
-            - containerPort: 5432
-              name: postgresdb
-          volumeMounts:
-            - name: pv-data
-              mountPath: /var/lib/postgresql/data
-      volumes:
-        - name: pv-data
-          persistentVolumeClaim:
-            claimName: kong-postgres-pv-claim
----
-# Kong postgres service
-apiVersion: v1
-kind: Service
-metadata:
-  name: kong-postgres
-  namespace: kong
-  labels:
-    app: postgres
-spec:
-  type: ClusterIP
-  selector:
-    app: postgres
-  ports:
-    - protocol: TCP
-      name: http
-      port: 5432
----
-#######################################
 # Kong database migration
 #######################################
 apiVersion: batch/v1
@@ -851,4 +740,96 @@ spec:
                 name: kong-proxy
                 port:
                   number: 80
+---
+#######################################
+# Konga: Kong GUI
+#######################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: konga
+  labels:
+    app: konga
+    version: v1
+  namespace: kong
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: konga
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: konga
+        version: v1
+    spec:
+      containers:
+        - name: konga
+          image: pantsel/konga:latest
+#          command: ["node ./bin/konga.js  prepare --adapter postgres --uri postgresql://konguser:kongdbpassword@kong-postgres:5432/kongdb"]
+          env:
+            - name: DB_ADAPTER
+              value: postgres
+            - name: DB_HOST
+              value: kong-postgres
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-configuration
+                  key: POSTGRES_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-configuration
+                  key: POSTGRES_PASSWORD
+            - name: DB_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-configuration
+                  key: POSTGRES_DB
+            - name: NODE_ENV
+              value: production
+          ports:
+            - containerPort: 1337
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: konga
+  name: konga
+  namespace: kong
+spec:
+  ports:
+    - protocol: TCP
+      port: 1337
+      targetPort: 1337
+  selector:
+    app: konga
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: konga-ing
+  namespace: kong
+  labels:
+    app: konga
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: api.konga.local
+      http:
+        paths:
+            - path: /
+              pathType: Prefix
+              backend:
+                service:
+                  name: konga
+                  port:
+                    number: 1337
 ---
