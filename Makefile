@@ -68,3 +68,6 @@ k-product-deploy:
 k-kong-deploy:
 	kubectl apply -f kubernetes/kong-database.yml; \
 	kubectl apply -f kubernetes/kong.yml
+
+k-keycloak-deploy:
+	kubectl apply -f kubernetes/keycloak.yaml
