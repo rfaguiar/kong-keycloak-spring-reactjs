@@ -4,7 +4,8 @@ GET {{server}}/auth/realms/{{realm}}/.well-known/openid-configuration
 ###
 
 // GET in your browser:
-// http://172.21.0.1:8180/auth/realms/kong/protocol/openid-connect/auth?response_type=code&client_id=stock-webapp&redirect_uri=http://172.21.0.1:3000
+http://172.21.0.1:8180/auth/realms/kong/protocol/openid-connect/auth?response_type=code&client_id=stock-webapp&redirect_uri=http://172.21.0.1:3000
+http://auth.keycloak.local/auth/realms/kong/protocol/openid-connect/auth?response_type=code&client_id=stock-webapp&redirect_uri=http://stock.frontend.local
 // put username: user
 // put password: user
 

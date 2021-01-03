@@ -1,3 +1,3 @@
 ###
-GET http://172.21.0.1:8000/stock/products
+GET http://{{products-host}}/stock/products
 Authorization: Bearer <PUT YOUR TOKEN>

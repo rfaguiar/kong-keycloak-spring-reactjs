@@ -78,13 +78,16 @@ add to hosts:
 <minikube ip> stock.product-backend.local api.kong-admin.local api.kong-gateway.local api.konga.local auth.keycloak.local
 
 browser access:  
-http://stock.product-backend.local  
+http://api.kong-gateway.local/stock/products    
 http://api.kong-admin.local  
 http://api.kong-gateway.local  
 http://api.konga.local  
 http://auth.keycloak.local  
+http://stock.frontend.local
 
 Kong in k8s reference:  
 https://medium.com/@suyashmohan/setting-up-postgresql-database-on-kubernetes-24a2a192e962  
 https://medium.com/engineering-applift/kong-in-kubernetes-1c4ef3c47dae  
 https://medium.com/@loschi.pablo/konga-in-kubernetes-cd9c31e71c75  
+
+kong secret: 372b211b-b101-48a6-b0fc-a7751c58ed95

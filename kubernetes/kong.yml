@@ -470,6 +470,10 @@ spec:
       labels:
         app: kong-admin
     spec:
+      hostAliases:
+        - ip: "192.168.49.2"
+          hostnames:
+            - "auth.keycloak.local"
       containers:
         - name: admin-api
           image: kong-oidc:1.0
@@ -560,6 +564,10 @@ spec:
         app: kong-ingress-controller
     spec:
       serviceAccountName: kong-service-account
+      hostAliases:
+          - ip: "192.168.49.2"
+            hostnames:
+              - "auth.keycloak.local"
       containers:
         - name: kong-ingress-controller
           env:
@@ -627,13 +635,17 @@ spec:
   selector:
     matchLabels:
       app: kong-proxy
-  replicas: 2
+  replicas: 1
   template:
     metadata:
       labels:
         name: kong-proxy
         app: kong-proxy
     spec:
+      hostAliases:
+        - ip: "192.168.49.2"
+          hostnames:
+            - "auth.keycloak.local"
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
