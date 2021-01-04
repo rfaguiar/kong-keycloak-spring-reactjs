@@ -75,7 +75,7 @@ $ make k-ip
 $ make k-dashboard
 ```
 add to hosts:
-<minikube ip> stock.product-backend.local api.kong-admin.local api.kong-gateway.local api.konga.local auth.keycloak.local
+<minikube ip> stock.product-backend.local api.kong-admin.local api.kong-gateway.local api.konga.local auth.keycloak.local stock.frontend.local
 
 browser access:  
 http://api.kong-gateway.local/stock/products    
@@ -83,7 +83,7 @@ http://api.kong-admin.local
 http://api.kong-gateway.local  
 http://api.konga.local  
 http://auth.keycloak.local  
-http://stock.frontend.local
+http://stock.frontend.local 
 
 Kong in k8s reference:  
 https://medium.com/@suyashmohan/setting-up-postgresql-database-on-kubernetes-24a2a192e962  

@@ -1,0 +1,124 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: stock
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-nginx-conf
+  namespace: stock
+data:
+  nginx.conf: |-
+    server {
+        listen       81;
+        listen  [::]:81;
+        server_name  localhost;
+        gzip  on;
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+        add_header X-Frame-Options "SAMEORIGIN";
+        server_tokens off;
+        root   /usr/share/nginx/html;
+        location /health {
+          return 200 "UP";
+        }
+        location / {
+            try_files $uri /index.html;
+        }
+        location /api {
+            proxy_pass  http://api.kong-gateway.local/stock;
+            proxy_redirect  off;
+        }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: frontend
+    version: v1
+  name: frontend-v1
+  namespace: stock
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+      version: v1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: frontend
+        version: v1
+        environment: dev
+      annotations:
+        sidecar.istio.io/inject: "true"
+    spec:
+      hostAliases:
+        - ip: "192.168.49.2"
+          hostnames:
+            - "api.kong-gateway.local"
+      containers:
+        - image: frontend:1.0
+          name: frontend
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: false
+          ports:
+            - name: http
+              containerPort: 81
+          volumeMounts:
+            - mountPath: /etc/nginx/conf.d/
+              name: nginx-vol
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 10
+      volumes:
+        - name: nginx-vol
+          configMap:
+              name: frontend-nginx-conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  labels:
+    app: frontend
+  namespace: stock
+spec:
+  type: ClusterIP
+  selector:
+    app: frontend
+  ports:
+    - protocol: TCP
+      name: http
+      port: 81
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frontend-ing
+  namespace: stock
+  labels:
+    app: frontend
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: stock.frontend.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 81

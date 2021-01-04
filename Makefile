@@ -58,12 +58,19 @@ k-product-build:
 	eval $$(minikube docker-env); \
 	docker build --force-rm -t product-backend:1.0 ./product-backend/;
 
+k-frontend-build:
+	eval $$(minikube docker-env); \
+	docker build --force-rm -t frontend:1.0 ./frontend/;
+
 k-kong-build:
 	eval $$(minikube docker-env); \
 	docker build --force-rm -t kong-oidc:1.0 ./kong/;
 
 k-product-deploy:
 	kubectl apply -f kubernetes/product-backend.yml
+
+k-frontend-deploy:
+	kubectl apply -f kubernetes/frontend.yml
 
 k-kong-deploy:
 	kubectl apply -f kubernetes/kong-database.yml; \
