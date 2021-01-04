@@ -2,15 +2,17 @@ import React from "react";
 import "./Header.css"
 import {useHistory} from "react-router-dom";
 import Swal from "sweetalert2";
+import {useKeycloak} from "@react-keycloak/web";
 
 declare interface HeaderProps {
     title: string
 }
 
 const Header: React.FC<HeaderProps> = (props) => {
-    const history = useHistory()
-    
-    const isLoggedIn = true
+    const history = useHistory();
+    const {keycloak} = useKeycloak();
+
+    const isLoggedIn = keycloak?.authenticated;
     
     const askToLogout = () => {
         Swal.fire({
@@ -20,7 +22,7 @@ const Header: React.FC<HeaderProps> = (props) => {
             confirmButtonColor: '#09f',
             cancelButtonColor: '#d33',
         })
-            .then(({value}) => value)
+            .then(() => keycloak?.logout())
     }
     
     const handleLoginLogout = () => {
